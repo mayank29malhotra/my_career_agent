@@ -68,5 +68,3 @@ venv.bak/
 # Pyre type checker
 .pyre/
 
-# Local files
-me/
