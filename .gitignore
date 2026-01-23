@@ -1,3 +1,7 @@
+# API Keys and Secrets - IMPORTANT!
+config.json
+.env
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -64,6 +68,19 @@ venv.bak/
 # mypy
 .mypy_cache/
 .dmypy.json
+
+# Screenshots from LinkedIn automation
+linkedin_*.png
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Pyre type checker
 .pyre/
