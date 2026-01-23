@@ -1,3 +1,15 @@
+---
+title: my_career_agent
+emoji: 🚀
+colorFrom: indigo
+colorTo: blue
+sdk: gradio
+sdk_version: "4.16.0"
+python_version: "3.9"
+app_file: app.py
+pinned: false
+---
+
 # 🤖 My Career Agent - Production Ready
 
 An AI-powered career agent that acts as your alter ego, answering questions about your professional background based on your LinkedIn profile. Perfect for recruiters, potential employers, and collaborators to learn about you 24/7.
