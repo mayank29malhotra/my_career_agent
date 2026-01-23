@@ -5,20 +5,28 @@ import requests
 from dotenv import load_dotenv
 from pypdf import PdfReader
 import gradio as gr
-from utils.llm_utils import call_gemini_model_full
+from utils.llm_utils import call_groq_model_full
 
 # Load environment variables
 load_dotenv(override=True)
 
-# Pushover setup
-pushover_user = os.getenv("PUSHOVER_USER")
-pushover_token = os.getenv("PUSHOVER_TOKEN")
-pushover_url = "https://api.pushover.net/1/messages.json"
+NTFY_TOPIC = os.getenv("NTFY_TOPIC", "agent-alerts-9f3k2")
+NTFY_URL = f"https://ntfy.sh/{NTFY_TOPIC}"
 
-def push(message):
-    print(f"Push: {message}")
-    payload = {"user": pushover_user, "token": pushover_token, "message": message}
-    requests.post(pushover_url, data=payload)
+
+def push(text: str, title="Agent Alert", priority=3):
+    headers = {
+        "Title": title,
+        "Priority": str(priority),  # 1 (low) → 5 (urgent)
+        "Tags": "robot,warning"
+    }
+
+    requests.post(
+        NTFY_URL,
+        data=text.encode("utf-8"),
+        headers=headers,
+        timeout=5
+    )
 
 def record_user_details(email, name="Name not provided", notes="not provided"):
     push(f"Recording interest from {name} with email {email} and notes {notes}")
@@ -131,7 +139,7 @@ def chat(message, history):
     messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
     done = False
     while not done:
-        response = call_gemini_model_full(messages=messages, tools=tools)
+        response = call_groq_model_full(messages=messages, tools=tools)
         finish_reason = response.choices[0].finish_reason
         if finish_reason == "tool_calls":
             message = response.choices[0].message

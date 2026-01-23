@@ -141,3 +141,90 @@ def call_gemini_model_full(
     
     return response
 
+
+def call_groq_model(
+    messages: Union[str, List[Dict]], 
+    model: str = "llama-3.3-70b-versatile",
+    temperature: float = 1.0,
+    tools: Optional[List[Dict]] = None
+) -> str:
+    """
+    Call GROQ model.
+    
+    Args:
+        messages: Either a string message or a list of message dicts in OpenAI format
+        model: Model name (default: "llama-3.3-70b-versatile")
+        temperature: Temperature for generation (default: 1.0)
+    
+    Returns:
+        Response content as string
+    
+    Raises:
+        ValueError: If API key is not set
+        Exception: If API call fails
+    """
+    GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+    api_key = os.getenv("GROQ_API_KEY")
+    
+    if not api_key:
+        raise ValueError("GROQ_API_KEY not found in environment variables")
+    
+    client = OpenAI(base_url=GROQ_BASE_URL, api_key=api_key)
+    messages_formatted = _ensure_messages_format(messages)
+    
+    _kwargs: Dict = {
+        "model": model,
+        "messages": messages_formatted,
+        "temperature": temperature,
+    }
+    if tools is not None:
+        _kwargs["tools"] = tools
+    
+    response = client.chat.completions.create(**_kwargs)
+    
+    return response.choices[0].message.content
+
+
+def call_groq_model_full(
+    messages: Union[str, List[Dict]], 
+    model: str = "llama-3.3-70b-versatile",
+    temperature: float = 1.0,
+    tools: Optional[List[Dict]] = None
+):
+    """
+    Call GROQ model.
+    
+    Args:
+        messages: Either a string message or a list of message dicts in OpenAI format
+        model: Model name (default: "llama-3.3-70b-versatile")
+        temperature: Temperature for generation (default: 1.0)
+        tools: Optional
+    
+    Returns:
+        Complete Response 
+    
+    Raises:
+        ValueError: If API key is not set
+        Exception: If API call fails
+    """
+    GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+    api_key = os.getenv("GROQ_API_KEY")
+    
+    if not api_key:
+        raise ValueError("GROQ_API_KEY not found in environment variables")
+    
+    client = OpenAI(base_url=GROQ_BASE_URL, api_key=api_key)
+    messages_formatted = _ensure_messages_format(messages)
+    
+    _kwargs: Dict = {
+        "model": model,
+        "messages": messages_formatted,
+        "temperature": temperature,
+    }
+    if tools is not None:
+        _kwargs["tools"] = tools
+    
+    response = client.chat.completions.create(**_kwargs)
+    
+    return response
+

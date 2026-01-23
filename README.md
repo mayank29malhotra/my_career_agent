@@ -5,10 +5,10 @@ An AI-powered career agent that acts as your alter ego, answering questions abou
 ## ✨ Features
 
 - **True Alter Ego**: The AI doesn't just represent you—it embodies your persona, speaking in first person with your personality
-- **Smart Conversations**: Powered by Google's Gemini 2.0, trained on your LinkedIn profile and personal summary
+- **Smart Conversations**: Powered by GROQ: llama-3.3-70b-versatile, trained on your LinkedIn profile and personal summary
 - **Always Online**: Multiple free/cheap hosting options that stay active 24/7
 - **Auto-Updates**: Weekly GitHub Action automatically downloads and updates your LinkedIn profile
-- **Contact Tracking**: Pushover notifications when someone shares their email
+- **Contact Tracking**: NTFY notifications when someone shares their email
 - **Easy to Use**: Gradio interface - simple, beautiful, and requires no frontend coding
 
 ## 🚀 Quick Start
@@ -16,9 +16,9 @@ An AI-powered career agent that acts as your alter ego, answering questions abou
 ### Prerequisites
 
 - Python 3.8+
-- Google Gemini API key ([get one free](https://aistudio.google.com/app/apikey))
+- GROQ API key ([get one free](https://console.groq.com/))
 - Your LinkedIn profile PDF
-- (Optional) Pushover account for notifications
+- (Optional) NTFY account for notifications
 
 ### Local Setup
 
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 # 3. Set up environment variables
 Copy-Item .env.example .env
 notepad .env
-# Add your GOOGLE_API_KEY, PUSHOVER credentials
+# Add your GOOGLE_API_KEY, NTFY credentials
 
 # 4. Add your LinkedIn PDF
 # Save your LinkedIn profile as me/linkedin.pdf
@@ -98,7 +98,7 @@ my_career_agent/
 
 ### Gradio Application
 - **Backend**: Python with Gradio framework
-- **AI**: Google Gemini API for conversations
+- **AI**: GROQ API for conversations
 - **UI**: Gradio's built-in chat interface (no frontend coding needed)
 - **Hosting**: Multiple options (see [HOSTING.md](HOSTING.md))
 
@@ -122,7 +122,7 @@ See [HOSTING.md](HOSTING.md) for detailed comparison.
 
 - **GitHub Pages**: FREE ✅
 - **GitHub Actions**: 2,000 min/month free ✅
-- **Gemini API**: 1,500 requests/day free ✅
+- **GROQ API**: Free tier available ✅
 - **Total**: $0/month 🎉
 
 ## 🐛 Troubleshooting
@@ -158,5 +158,5 @@ See [HOSTING.md](HOSTING.md) for detailed comparison.
 
 ---
 
-**Built with ❤️ using Google Gemini, GitHub Pages, and GitHub Actions**
+**Built with ❤️ using GROQ, GitHub Pages, and GitHub Actions**
 

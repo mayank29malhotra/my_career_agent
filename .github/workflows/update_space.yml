@@ -18,8 +18,10 @@ jobs:
       with:
         python-version: '3.9'
 
-    - name: Install Gradio
-      run: python -m pip install gradio
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install gradio huggingface_hub==0.16.4
 
     - name: Log in to Hugging Face
       run: python -c 'import huggingface_hub; huggingface_hub.login(token="${{ secrets.hf_token }}")'
