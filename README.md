@@ -106,6 +106,19 @@ my_career_agent/
         └── update-linkedin.yml  # Weekly auto-update (optional)
 ```
 
+## 🔐 LinkedIn Automation Setup
+
+To enable the automated LinkedIn PDF download (locally or via GitHub Actions), set these environment variables:
+
+- LINKEDIN_EMAIL: Your LinkedIn login email
+- LINKEDIN_PASSWORD: Your LinkedIn password
+- LINKEDIN_PROFILE_URL: Your profile URL, e.g. https://www.linkedin.com/in/your-handle/
+- LINKEDIN_SKIP_LOGIN: Set to `true` to attempt public profile download without logging in (recommended to reduce account risk). If public profile is not visible, the script will exit with a helpful message.
+
+GitHub Actions:
+- Add `LINKEDIN_EMAIL`, `LINKEDIN_PASSWORD`, and `LINKEDIN_PROFILE_URL` as repository secrets
+- The workflow will consume them when running `scripts/download_linkedin.py`
+
 ## 🔧 How It Works
 
 ### Gradio Application
@@ -153,6 +166,8 @@ See [HOSTING.md](HOSTING.md) for detailed comparison.
 - Verify credentials in GitHub Secrets
 - Try running locally: `python scripts/download_linkedin.py`
 - Check for captcha or 2FA requirements
+- Confirm `LINKEDIN_PROFILE_URL` is set and correct (public profile URL)
+- If using `LINKEDIN_SKIP_LOGIN=true`, ensure your profile’s “Public profile visibility” is enabled in LinkedIn settings. Otherwise LinkedIn will redirect to an auth wall and the script will stop.
 
 ### Gradio Not Starting
 - Verify port 7860 is available

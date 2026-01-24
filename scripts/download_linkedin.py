@@ -21,16 +21,25 @@ from playwright.async_api import async_playwright
 # Configuration
 LINKEDIN_EMAIL = os.getenv("LINKEDIN_EMAIL")
 LINKEDIN_PASSWORD = os.getenv("LINKEDIN_PASSWORD")
+LINKEDIN_PROFILE_URL = os.getenv("LINKEDIN_PROFILE_URL")
+LINKEDIN_SKIP_LOGIN = os.getenv("LINKEDIN_SKIP_LOGIN", "false").strip().lower() in {"1", "true", "yes"}
 OUTPUT_DIR = Path("me")
 OUTPUT_FILE = OUTPUT_DIR / "linkedin.pdf"
 
 async def download_linkedin_profile():
     """Download LinkedIn profile as PDF using Playwright."""
     
-    if not LINKEDIN_EMAIL or not LINKEDIN_PASSWORD:
-        print("❌ Error: LINKEDIN_EMAIL and LINKEDIN_PASSWORD environment variables must be set")
-        print("   For GitHub Actions: Add them as repository secrets")
-        print("   For local use: Set them in your environment or .env file")
+    if not LINKEDIN_SKIP_LOGIN:
+        if not LINKEDIN_EMAIL or not LINKEDIN_PASSWORD:
+            print("❌ Error: LINKEDIN_EMAIL and LINKEDIN_PASSWORD environment variables must be set")
+            print("   For GitHub Actions: Add them as repository secrets")
+            print("   For local use: Set them in your environment or .env file")
+            print("   Or set LINKEDIN_SKIP_LOGIN=true to attempt public profile download without credentials")
+            sys.exit(1)
+    if not LINKEDIN_PROFILE_URL:
+        print("❌ Error: LINKEDIN_PROFILE_URL environment variable must be set")
+        print("   Example: https://www.linkedin.com/in/your-handle/")
+        print("   For GitHub Actions: Add it as a repository secret or env")
         sys.exit(1)
     
     print("🚀 Starting LinkedIn profile download...")
@@ -40,7 +49,11 @@ async def download_linkedin_profile():
         print("📱 Launching browser...")
         browser = await p.chromium.launch(
             headless=True,
-            args=['--no-sandbox', '--disable-setuid-sandbox']
+            args=[
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-blink-features=AutomationControlled',
+            ]
         )
         
         context = await browser.new_context(
@@ -51,35 +64,50 @@ async def download_linkedin_profile():
         page = await context.new_page()
         
         try:
-            # Navigate to LinkedIn login
-            print("🔑 Logging into LinkedIn...")
-            await page.goto('https://www.linkedin.com/login', wait_until='networkidle')
-            
-            # Fill login form
-            await page.fill('input[id="username"]', LINKEDIN_EMAIL)
-            await page.fill('input[id="password"]', LINKEDIN_PASSWORD)
-            
-            # Click login button
-            await page.click('button[type="submit"]')
-            
-            # Wait for navigation
-            await page.wait_for_load_state('networkidle', timeout=30000)
-            
-            # Check if login was successful
-            current_url = page.url
-            if 'checkpoint' in current_url or 'challenge' in current_url:
-                print("⚠️  Warning: LinkedIn security challenge detected")
-                print("   You may need to verify your login manually")
-                # Take screenshot for debugging
-                await page.screenshot(path='linkedin_challenge.png')
-                print("   Screenshot saved as linkedin_challenge.png")
+            if not LINKEDIN_SKIP_LOGIN:
+                # Navigate to LinkedIn login
+                print("🔑 Logging into LinkedIn...")
+                await page.goto('https://www.linkedin.com/login', wait_until='domcontentloaded', timeout=60000)
+                
+                # Fill login form
+                await page.fill('input[id="username"]', LINKEDIN_EMAIL)
+                await page.fill('input[id="password"]', LINKEDIN_PASSWORD)
+                
+                # Click login button
+                await page.click('button[type="submit"]')
+                
+                # Wait for navigation
+                await page.wait_for_load_state('domcontentloaded', timeout=60000)
+                
+                # Check if login was successful
+                current_url = page.url
+                if 'checkpoint' in current_url or 'challenge' in current_url:
+                    print("⚠️  Warning: LinkedIn security challenge detected")
+                    print("   You may need to verify your login manually")
+                    # Take screenshot for debugging
+                    await page.screenshot(path='linkedin_challenge.png')
+                    print("   Screenshot saved as linkedin_challenge.png")
+                    print("❌ Exiting due to login challenge. Configure trusted device, reduce 2FA prompts, or reuse cookies.")
+                    sys.exit(2)
+            else:
+                print("🔓 Skipping login (LINKEDIN_SKIP_LOGIN=true). Attempting public profile view...")
             
             # Navigate to profile (assuming we're logged in)
             print("📄 Navigating to profile...")
-            await page.goto('https://www.linkedin.com/in/me/', wait_until='networkidle', timeout=30000)
+            await asyncio.sleep(2)
+            await page.goto(LINKEDIN_PROFILE_URL, wait_until='domcontentloaded', timeout=90000)
+            # Detect redirects to login/authwall when skipping login
+            if LINKEDIN_SKIP_LOGIN:
+                current_url = page.url
+                if any(x in current_url for x in ["/login", "checkpoint", "challenge", "authwall"]):
+                    print("❌ Public profile not accessible without login. Enable 'Public profile visibility' in LinkedIn settings or disable LINKEDIN_SKIP_LOGIN.")
+                    # Screenshot for debugging
+                    await page.screenshot(path='linkedin_public_blocked.png')
+                    print("   Screenshot saved as linkedin_public_blocked.png")
+                    sys.exit(3)
             
             # Wait for profile content to load
-            await page.wait_for_selector('main', timeout=10000)
+            await page.wait_for_selector('main', timeout=20000)
             
             # Scroll to load all content
             print("📜 Loading full profile...")
@@ -98,10 +126,11 @@ async def download_linkedin_profile():
             await asyncio.sleep(2)
             
             # Ensure output directory exists
-            OUTPUT_DIR.mkdir(exist_ok=True)
+            OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
             
             # Generate PDF
             print(f"💾 Generating PDF to {OUTPUT_FILE}...")
+            # Print the current page to PDF using Chromium
             await page.pdf(
                 path=str(OUTPUT_FILE),
                 format='A4',
