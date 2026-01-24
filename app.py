@@ -152,7 +152,7 @@ def chat(message, history):
     return response.choices[0].message.content
 
 def main():
-    gr.ChatInterface(chat, type="messages").launch()
+    gr.ChatInterface(chat).launch()
 
 if __name__ == "__main__":
     main()
