@@ -21,7 +21,7 @@ from playwright.async_api import async_playwright
 # Configuration
 LINKEDIN_EMAIL = os.getenv("LINKEDIN_EMAIL")
 LINKEDIN_PASSWORD = os.getenv("LINKEDIN_PASSWORD")
-LINKEDIN_PROFILE_URL = https://www.linkedin.com/in/mayank-malhotra-858917217/
+LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/mayank-malhotra-858917217/"
 LINKEDIN_SKIP_LOGIN = os.getenv("LINKEDIN_SKIP_LOGIN", "false").strip().lower() in {"1", "true", "yes"}
 OUTPUT_DIR = Path("me")
 OUTPUT_FILE = OUTPUT_DIR / "linkedin.pdf"
