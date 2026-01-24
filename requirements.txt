@@ -5,3 +5,4 @@ openai==1.58.1
 requests==2.32.3
 pypdf==4.3.1
 gradio==4.44.1
+huggingface-hub>=0.16,<0.23
