@@ -2,11 +2,13 @@ name: Keep Alive
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Every 5 minutes
+    - cron: '*/5 * * * *'  # Every 5 minutes
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   keep-alive:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Hugging Face Space
-        run: curl -f https://huggingface.co/spaces/yomayank/carrer_agent || exit 0
+        run: |
+          curl -sf https://yomayank-carrer-agent.hf.space/ || echo "Space may be sleeping, ping sent"
