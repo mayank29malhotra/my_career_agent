@@ -142,10 +142,15 @@ def chat(message, history):
         response = call_groq_model_full(messages=messages, tools=tools)
         finish_reason = response.choices[0].finish_reason
         if finish_reason == "tool_calls":
-            message = response.choices[0].message
-            tool_calls = message.tool_calls
+            assistant_message = response.choices[0].message
+            tool_calls = assistant_message.tool_calls
             results = handle_tool_calls(tool_calls)
-            messages.append(message)
+            # Convert OpenAI message object to dict format
+            messages.append({
+                "role": "assistant",
+                "content": assistant_message.content or "",
+                "tool_calls": [{"id": tc.id, "function": {"name": tc.function.name, "arguments": tc.function.arguments}} for tc in tool_calls]
+            })
             messages.extend(results)
         else:
             done = True
