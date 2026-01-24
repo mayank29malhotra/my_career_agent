@@ -1,4 +1,5 @@
 # Core dependencies for Gradio app
+# Compatible with Python 3.11+ (specified in .python-version)
 python-dotenv==1.0.1
 openai==1.58.1
 requests==2.32.3
