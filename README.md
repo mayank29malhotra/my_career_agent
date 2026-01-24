@@ -56,34 +56,6 @@ python app.py
 
 Your app will be running at http://localhost:7860
 
-### Deploy Always-On (Choose One)
-
-See **[HOSTING.md](HOSTING.md)** for detailed hosting options:
-
-#### 🏆 Easiest: Hugging Face + Keep-Alive (FREE)
-1. Already deployed to HF? ✅
-2. Go to [UptimeRobot.com](https://uptimerobot.com)
-3. Add monitor with your HF Space URL
-4. Set interval to 5 minutes
-5. Done! Your app never sleeps 🎉
-
-#### 🥇 Best Free: Oracle Cloud (FREE Forever)
-- True always-on, FREE forever
-- Full VM control
-- Setup time: 30 minutes
-- [See HOSTING.md for steps](HOSTING.md#-alternative-4-oracle-cloud-free-tier-best-free)
-
-#### 🥈 Best UX: Railway ($5/month credit)
-```powershell
-npm install -g @railway/cli
-railway login
-railway init
-railway up
-```
-- $5 monthly credit (enough for 24/7)
-- Great developer experience
-- [See HOSTING.md for details](HOSTING.md#-alternative-1-railwayapp-free-5month-credit)
-
 ## 📁 Project Structure
 
 ```
