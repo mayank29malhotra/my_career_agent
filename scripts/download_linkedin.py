@@ -51,9 +51,9 @@ async def download_linkedin_profile():
         page = await context.new_page()
         
         try:
-            # Navigate to LinkedIn login
+            # Navigate to LinkedIn login with increased timeout
             print("🔑 Logging into LinkedIn...")
-            await page.goto('https://www.linkedin.com/login', wait_until='networkidle')
+            await page.goto('https://www.linkedin.com/login', wait_until='load', timeout=60000)
             
             # Fill login form
             await page.fill('input[id="username"]', LINKEDIN_EMAIL)

@@ -56,34 +56,6 @@ python app.py
 
 Your app will be running at http://localhost:7860
 
-### Deploy Always-On (Choose One)
-
-See **[HOSTING.md](HOSTING.md)** for detailed hosting options:
-
-#### 🏆 Easiest: Hugging Face + Keep-Alive (FREE)
-1. Already deployed to HF? ✅
-2. Go to [UptimeRobot.com](https://uptimerobot.com)
-3. Add monitor with your HF Space URL
-4. Set interval to 5 minutes
-5. Done! Your app never sleeps 🎉
-
-#### 🥇 Best Free: Oracle Cloud (FREE Forever)
-- True always-on, FREE forever
-- Full VM control
-- Setup time: 30 minutes
-- [See HOSTING.md for steps](HOSTING.md#-alternative-4-oracle-cloud-free-tier-best-free)
-
-#### 🥈 Best UX: Railway ($5/month credit)
-```powershell
-npm install -g @railway/cli
-railway login
-railway init
-railway up
-```
-- $5 monthly credit (enough for 24/7)
-- Great developer experience
-- [See HOSTING.md for details](HOSTING.md#-alternative-1-railwayapp-free-5month-credit)
-
 ## 📁 Project Structure
 
 ```
@@ -105,70 +77,3 @@ my_career_agent/
     └── workflows/
         └── update-linkedin.yml  # Weekly auto-update (optional)
 ```
-
-## 🔧 How It Works
-
-### Gradio Application
-- **Backend**: Python with Gradio framework
-- **AI**: GROQ API for conversations
-- **UI**: Gradio's built-in chat interface (no frontend coding needed)
-- **Hosting**: Multiple options (see [HOSTING.md](HOSTING.md))
-
-### Always-On Strategy
-| Service | Cost | Uptime | Setup |
-|---------|------|--------|-------|
-| HF + UptimeRobot | FREE ✅ | 99%+ | 5 min |
-| Oracle Cloud | FREE ✅ | 100% | 30 min |
-| Railway | $5 credit/mo | 100% | 10 min |
-| Render | FREE ✅ | 99%+ | 5 min |
-| Fly.io | ~$2/mo | 100% | 15 min |
-
-See [HOSTING.md](HOSTING.md) for detailed comparison.
-
-**Recommended for most users:** HF + UptimeRobot (completely FREE)e VM hosting forever
-4. **Your own VPS**: Full control
-
-See [HOSTING.md](HOSTING.md) for detailed comparison.
-
-## 💰 Cost Analysis
-
-- **GitHub Pages**: FREE ✅
-- **GitHub Actions**: 2,000 min/month free ✅
-- **GROQ API**: Free tier available ✅
-- **Total**: $0/month 🎉
-
-## 🐛 Troubleshooting
-
-### "API key not found" Error
-- Check `.env` file exists with `GOOGLE_API_KEY`
-- Verify the key is valid at https://aistudio.google.com/
-
-### App Sleeping/Not Responding
-- Set up keep-alive service (see [HOSTING.md](HOSTING.md))
-- Use UptimeRobot to ping every 5 minutes
-- Or switch to always-on hosting (Railway, Oracle Cloud)
-
-### LinkedIn Download Fails
-- Check GitHub Actions logs
-- Verify credentials in GitHub Secrets
-- Try running locally: `python scripts/download_linkedin.py`
-- Check for captcha or 2FA requirements
-
-### Gradio Not Starting
-- Verify port 7860 is available
-- Check all dependencies installed: `pip install -r requirements.txt`
-- Look for errors in console output
-
-## 📝 Original vs Production
-
-| Feature | Hugging Face | GitHub Pages |
-|---------|--------------|--------------|
-| Hosting | Gradio | Static HTML/JS |
-| Cost | Free (sleeps) | Free (24/7) |
-| Uptime | Sleep mode | Always on |
-| Updates | Manual | Auto (weekly) |
-
----
-
-**Built with ❤️ using GROQ, GitHub Pages, and GitHub Actions**
-
