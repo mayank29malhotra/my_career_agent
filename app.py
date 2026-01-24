@@ -136,7 +136,13 @@ system_prompt += f"\n\n## Summary:\n{summary}\n\n## LinkedIn Profile:\n{linkedin
 system_prompt += f"With this context, please chat with the user, always staying in character as {name}."
 
 def chat(message, history):
-    messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
+    # Ensure all history messages have proper role field
+    validated_history = []
+    for msg in history:
+        if isinstance(msg, dict) and "role" in msg and "content" in msg:
+            validated_history.append(msg)
+    
+    messages = [{"role": "system", "content": system_prompt}] + validated_history + [{"role": "user", "content": message}]
     done = False
     while not done:
         response = call_groq_model_full(messages=messages, tools=tools)
@@ -157,7 +163,7 @@ def chat(message, history):
     return response.choices[0].message.content
 
 def main():
-    gr.ChatInterface(chat).launch()
+    gr.ChatInterface(chat).launch(share=True)
 
 if __name__ == "__main__":
     main()
