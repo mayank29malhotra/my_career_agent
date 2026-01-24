@@ -130,6 +130,8 @@ You're here to help recruiters, potential employers, collaborators, or anyone in
 
 4. **Be strategic**: Treat every conversation as an opportunity - whether it's a recruiter, potential client, or collaborator. Be memorable, be authentic, be you.
 
+5. Before answerign the question think about all the relevant topics in the linkedin information and then answer about it
+
 """
 
 system_prompt += f"\n\n## Summary:\n{summary}\n\n## LinkedIn Profile:\n{linkedin}\n\n"
@@ -151,11 +153,11 @@ def chat(message, history):
             assistant_message = response.choices[0].message
             tool_calls = assistant_message.tool_calls
             results = handle_tool_calls(tool_calls)
-            # Convert OpenAI message object to dict format
+            # Convert OpenAI message object to dict format with proper type field
             messages.append({
                 "role": "assistant",
                 "content": assistant_message.content or "",
-                "tool_calls": [{"id": tc.id, "function": {"name": tc.function.name, "arguments": tc.function.arguments}} for tc in tool_calls]
+                "tool_calls": [{"id": tc.id, "type": "function", "function": {"name": tc.function.name, "arguments": tc.function.arguments}} for tc in tool_calls]
             })
             messages.extend(results)
         else:
@@ -163,7 +165,7 @@ def chat(message, history):
     return response.choices[0].message.content
 
 def main():
-    gr.ChatInterface(chat).launch(share=True)
+    gr.ChatInterface(chat).launch()
 
 if __name__ == "__main__":
     main()
