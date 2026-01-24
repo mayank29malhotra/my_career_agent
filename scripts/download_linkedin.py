@@ -16,7 +16,7 @@ import os
 import sys
 import asyncio
 from pathlib import Path
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, BrowserContext
 
 # Configuration
 LINKEDIN_EMAIL = os.getenv("LINKEDIN_EMAIL")
@@ -25,6 +25,32 @@ LINKEDIN_PROFILE_URL = os.getenv("LINKEDIN_PROFILE_URL")
 LINKEDIN_SKIP_LOGIN = os.getenv("LINKEDIN_SKIP_LOGIN", "false").strip().lower() in {"1", "true", "yes"}
 OUTPUT_DIR = Path("me")
 OUTPUT_FILE = OUTPUT_DIR / "linkedin.pdf"
+
+async def stealth_context(context: BrowserContext):
+    """Apply stealth techniques to bypass bot detection."""
+    await context.add_init_script("""
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => false,
+        });
+        
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [1, 2, 3, 4, 5],
+        });
+        
+        Object.defineProperty(navigator, 'languages', {
+            get: () => ['en-US', 'en'],
+        });
+        
+        window.chrome = {
+            runtime: {},
+        };
+        
+        Object.defineProperty(navigator, 'permissions', {
+            get: () => ({
+                query: () => Promise.resolve({ state: 'prompt' })
+            }),
+        });
+    """)
 
 async def download_linkedin_profile():
     """Download LinkedIn profile as PDF using Playwright."""
@@ -53,15 +79,40 @@ async def download_linkedin_profile():
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-blink-features=AutomationControlled',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-first-run',
+                '--no-default-browser-check',
+                '--disable-popup-blocking',
+                '--disable-extensions',
+                '--disable-sync',
+                '--disable-web-resources',
+                '--disable-default-apps',
             ]
         )
         
         context = await browser.new_context(
             viewport={'width': 1920, 'height': 1080},
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            locale='en-US',
+            timezone_id='America/New_York',
+            geolocation={'latitude': 40.7128, 'longitude': -74.0060},
+            permissions=['geolocation'],
         )
         
+        # Apply stealth techniques
+        await stealth_context(context)
+        
         page = await context.new_page()
+        
+        # Set additional headers to appear human-like
+        await page.set_extra_http_headers({
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+        })
         
         try:
             if not LINKEDIN_SKIP_LOGIN:
@@ -69,15 +120,40 @@ async def download_linkedin_profile():
                 print("🔑 Logging into LinkedIn...")
                 await page.goto('https://www.linkedin.com/login', wait_until='domcontentloaded', timeout=60000)
                 
-                # Fill login form
-                await page.fill('input[id="username"]', LINKEDIN_EMAIL)
-                await page.fill('input[id="password"]', LINKEDIN_PASSWORD)
+                # Add random delays to appear human-like
+                await asyncio.sleep(2)
+                
+                # Fill login form with delay between keystrokes
+                username_field = await page.query_selector('input[id="username"]')
+                if username_field:
+                    await username_field.click()
+                    await asyncio.sleep(0.5)
+                    for char in LINKEDIN_EMAIL:
+                        await page.type('input[id="username"]', char, delay=50)
+                        await asyncio.sleep(0.05)
+                else:
+                    await page.fill('input[id="username"]', LINKEDIN_EMAIL)
+                
+                await asyncio.sleep(1)
+                
+                password_field = await page.query_selector('input[id="password"]')
+                if password_field:
+                    await password_field.click()
+                    await asyncio.sleep(0.5)
+                    for char in LINKEDIN_PASSWORD:
+                        await page.type('input[id="password"]', char, delay=50)
+                        await asyncio.sleep(0.05)
+                else:
+                    await page.fill('input[id="password"]', LINKEDIN_PASSWORD)
+                
+                await asyncio.sleep(1.5)
                 
                 # Click login button
                 await page.click('button[type="submit"]')
                 
-                # Wait for navigation
-                await page.wait_for_load_state('domcontentloaded', timeout=60000)
+                # Wait for navigation with longer timeout
+                await page.wait_for_load_state('domcontentloaded', timeout=90000)
+                await asyncio.sleep(3)
                 
                 # Check if login was successful
                 current_url = page.url
