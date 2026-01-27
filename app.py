@@ -10,7 +10,7 @@ from utils.llm_utils import call_groq_model_full
 # Load environment variables
 load_dotenv(override=True)
 
-NTFY_TOPIC = os.getenv("NTFY_TOPIC", "agent-alerts-9f3k2")
+NTFY_TOPIC = os.getenv("NTFY_TOPIC")
 NTFY_URL = f"https://ntfy.sh/{NTFY_TOPIC}"
 
 
