@@ -2,6 +2,13 @@
 config.json
 .env
 
+# LinkedIn Data - Personal data, download from HuggingFace or extract locally
+me/linkedin.pdf
+me/linkedin.txt
+me/linkedin_data/
+me/*.zip
+Complete_LinkedInDataExport*.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

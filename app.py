@@ -2,8 +2,8 @@
 import os
 import json
 import requests
+from pathlib import Path
 from dotenv import load_dotenv
-from pypdf import PdfReader
 import gradio as gr
 from utils.llm_utils import call_groq_model_full
 
@@ -12,6 +12,70 @@ load_dotenv(override=True)
 
 NTFY_TOPIC = os.getenv("NTFY_TOPIC", "agent-alerts-9f3k2")
 NTFY_URL = f"https://ntfy.sh/{NTFY_TOPIC}"
+
+# LinkedIn data configuration
+HF_LINKEDIN_REPO = os.getenv("HF_LINKEDIN_REPO", "")
+HF_LINKEDIN_FILE = os.getenv("HF_LINKEDIN_FILE", "linkedin.txt")
+HF_TOKEN = os.getenv("HF_TOKEN", None)
+ME_DIR = Path("me")
+
+
+def load_linkedin_data():
+    """
+    Load LinkedIn data from local file or HuggingFace.
+    Priority: local linkedin.txt > HuggingFace > local PDF (legacy)
+    """
+    linkedin_txt = ME_DIR / "linkedin.txt"
+    linkedin_pdf = ME_DIR / "linkedin.pdf"
+    
+    # 1. Try local text file first
+    if linkedin_txt.exists():
+        with open(linkedin_txt, 'r', encoding='utf-8') as f:
+            content = f.read()
+        if content.strip():
+            print(f"✓ Loaded LinkedIn data from {linkedin_txt} ({len(content):,} chars)")
+            return content
+    
+    # 2. Try HuggingFace
+    if HF_LINKEDIN_REPO:
+        try:
+            from huggingface_hub import hf_hub_download
+            print(f"📥 Downloading LinkedIn data from HuggingFace: {HF_LINKEDIN_REPO}")
+            
+            ME_DIR.mkdir(exist_ok=True)
+            local_path = hf_hub_download(
+                repo_id=HF_LINKEDIN_REPO,
+                filename=HF_LINKEDIN_FILE,
+                repo_type="dataset",
+                token=HF_TOKEN,
+                local_dir=ME_DIR,
+                local_dir_use_symlinks=False
+            )
+            
+            with open(local_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            print(f"✓ Downloaded LinkedIn data from HuggingFace ({len(content):,} chars)")
+            return content
+        except Exception as e:
+            print(f"⚠️ Failed to download from HuggingFace: {e}")
+    
+    # 3. Fallback to PDF (legacy)
+    if linkedin_pdf.exists():
+        try:
+            from pypdf import PdfReader
+            reader = PdfReader(linkedin_pdf)
+            text = ""
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text
+            print(f"✓ Loaded LinkedIn data from PDF ({len(text):,} chars)")
+            return text
+        except Exception as e:
+            print(f"⚠️ Failed to read PDF: {e}")
+    
+    print("⚠️ No LinkedIn data found!")
+    return ""
 
 
 def push(text: str, title="Agent Alert", priority=3):
@@ -81,12 +145,7 @@ def handle_tool_calls(tool_calls):
     return results
 
 # Load user info
-reader = PdfReader("me/linkedin.pdf")
-linkedin = ""
-for page in reader.pages:
-    text = page.extract_text()
-    if text:
-        linkedin += text
+linkedin = load_linkedin_data()
 
 with open("me/summary.txt", "r", encoding="utf-8") as f:
     summary = f.read()
