@@ -111,12 +111,40 @@ def extract_profile(zip_ref):
 
 
 def extract_positions(zip_ref):
-    """Extract work experience."""
+    """Extract work experience (newest first)."""
     rows = read_csv_from_zip(zip_ref, "Positions.csv")
     if not rows:
         return ""
     
-    lines = ["\n# WORK EXPERIENCE", ""]
+    # Parse date for sorting (format: "Mon YYYY" or "YYYY")
+    def parse_date(date_str):
+        if not date_str:
+            return 0
+        months = {'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+                  'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12}
+        parts = date_str.lower().split()
+        try:
+            if len(parts) == 2:  # "Aug 2024"
+                month = months.get(parts[0][:3], 1)
+                year = int(parts[1])
+                return year * 100 + month
+            elif len(parts) == 1:  # "2024"
+                return int(parts[0]) * 100
+        except:
+            pass
+        return 0
+    
+    # Sort: current jobs first (no end date), then by start date descending
+    def sort_key(pos):
+        end = pos.get('Finished On', '').strip()
+        start = pos.get('Started On', '')
+        is_current = not end or end.lower() == 'present'
+        start_val = parse_date(start)
+        return (0 if is_current else 1, -start_val)
+    
+    rows = sorted(rows, key=sort_key)
+    
+    lines = ["\n# WORK EXPERIENCE (Most Recent First)", ""]
     
     for pos in rows:
         company = pos.get('Company Name', 'Unknown Company')
@@ -190,12 +218,15 @@ def extract_skills(zip_ref):
 
 
 def extract_certifications(zip_ref):
-    """Extract certifications."""
+    """Extract certifications (newest first)."""
     rows = read_csv_from_zip(zip_ref, "Certifications.csv")
     if not rows:
         return ""
     
-    lines = ["\n# CERTIFICATIONS", ""]
+    # Sort by date (newest first)
+    rows = sorted(rows, key=lambda x: x.get('Started On', ''), reverse=True)
+    
+    lines = ["\n# CERTIFICATIONS (Most Recent First)", ""]
     
     for cert in rows:
         name = cert.get('Name', 'Unknown Certification')
@@ -213,12 +244,15 @@ def extract_certifications(zip_ref):
 
 
 def extract_projects(zip_ref):
-    """Extract projects."""
+    """Extract projects (newest first)."""
     rows = read_csv_from_zip(zip_ref, "Projects.csv")
     if not rows:
         return ""
     
-    lines = ["\n# PROJECTS", ""]
+    # Sort by start date (newest first)
+    rows = sorted(rows, key=lambda x: x.get('Started On', ''), reverse=True)
+    
+    lines = ["\n# PROJECTS (Most Recent First)", ""]
     
     for proj in rows:
         name = proj.get('Title', 'Unknown Project')

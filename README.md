@@ -85,36 +85,32 @@ python app.py
 
 Your app will be running at http://localhost:7860
 
-## ☁️ HuggingFace Data Storage (Recommended for Production)
+## ☁️ Deploying to HuggingFace Spaces
 
-Store your LinkedIn data privately on HuggingFace instead of in the repo:
-
-### Setup HuggingFace Dataset
-
-1. **Create a private dataset** on HuggingFace:
-   - Go to https://huggingface.co/new-dataset
-   - Name it something like `career-agent-data`
-   - Set visibility to **Private**
-
-2. **Upload your linkedin.txt**:
-   - After running `extract_linkedin_zip.py`, upload `me/linkedin.txt` to your dataset
-   - You can do this weekly to keep it updated
-
-3. **Configure Environment Variables**:
-   ```bash
-   HF_LINKEDIN_REPO=your-username/career-agent-data
-   HF_LINKEDIN_FILE=linkedin.txt
-   HF_TOKEN=hf_xxxxx  # Required for private repos
-   ```
-
-4. **For HuggingFace Spaces**: Add these as Space Secrets in your Space settings
+Upload your LinkedIn data directly to the Space repo's `me/` folder (alongside `summary.txt`):
 
 ### 🔄 Weekly Update Workflow
 
-1. Download fresh LinkedIn data export from LinkedIn (repeat the steps above)
-2. Run `python scripts/extract_linkedin_zip.py`
-3. Upload the new `me/linkedin.txt` to your HuggingFace dataset (replacing the old file)
-4. Your deployed agent will automatically use the latest data on next restart!
+1. **Download** fresh LinkedIn data export from LinkedIn
+2. **Extract** locally: `python scripts/extract_linkedin_zip.py`
+3. **Upload** `me/linkedin.txt` to your HuggingFace Space:
+   - Go to your Space → Files → `me/` folder
+   - Click "Add file" → "Upload files"
+   - Upload `linkedin.txt` (replacing the old one)
+   - Commit changes
+4. Your Space will automatically restart with the updated data!
+
+```
+Your HuggingFace Space:
+├── app.py
+├── requirements.txt
+├── me/
+│   ├── linkedin.txt    ← Upload here weekly
+│   └── summary.txt
+└── ...
+```
+
+> ⚠️ **Note**: `linkedin.txt` is gitignored locally but you upload it directly to HuggingFace. This keeps your personal data off GitHub while still being available in production.
 
 ## 📁 Project Structure
 
@@ -125,13 +121,12 @@ my_career_agent/
 ├── .env.example          # Environment variables template
 ├── README.md             # This file
 ├── me/
-│   ├── linkedin.txt      # Extracted LinkedIn data (gitignored)
+│   ├── linkedin.txt      # Extracted LinkedIn data (gitignored locally, uploaded to HF)
 │   └── summary.txt       # Your personal summary
 ├── utils/
 │   └── llm_utils.py      # LLM helper functions
 └── scripts/
-    ├── extract_linkedin_zip.py  # Extract data from LinkedIn ZIP export
-    └── load_linkedin_hf.py      # Load data from HuggingFace
+    └── extract_linkedin_zip.py  # Extract data from LinkedIn ZIP export
 ```
 
 ## 🔒 Privacy & Security
@@ -139,27 +134,14 @@ my_career_agent/
 Your LinkedIn data is **never pushed to GitHub**:
 - `me/linkedin.txt` and `me/linkedin.pdf` are in `.gitignore`
 - LinkedIn ZIP files are also gitignored
-- Use HuggingFace **private** datasets for production deployment
-- Your HuggingFace token should be stored as an environment secret
-
-## 🔧 Data Loading Priority
-
-The app loads LinkedIn data in this order:
-1. **Local file**: `me/linkedin.txt` (fastest, for development)
-2. **HuggingFace**: Downloads from your private dataset (for production)
-3. **PDF fallback**: `me/linkedin.pdf` (legacy support)
+- For production, upload `linkedin.txt` directly to your HuggingFace Space repo
 
 ## 🛠️ Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GROQ_API_KEY` | Yes | Your GROQ API key for LLM |
-| `NTFY_TOPIC` | No | NTFY topic for notifications |
-| `HF_LINKEDIN_REPO` | No* | HuggingFace dataset ID (e.g., `username/career-agent-data`) |
-| `HF_LINKEDIN_FILE` | No | Filename in HF dataset (default: `linkedin.txt`) |
-| `HF_TOKEN` | No* | HuggingFace token for private repos |
-
-*Required for HuggingFace-based deployment
+| `NTFY_TOPIC` | No | NTFY topic for push notifications |
 
 ## 🤔 FAQ
 
@@ -170,7 +152,8 @@ A: The ZIP export contains structured CSV data with all your information - work 
 A: Weekly is recommended to keep your agent up-to-date with any profile changes.
 
 **Q: Is my LinkedIn data safe?**
-A: Yes! The data is never committed to Git (gitignored), and when using HuggingFace, you should use a private dataset.
+A: Yes! The data is never committed to GitHub (gitignored). You upload it directly to your HuggingFace Space.
 
-**Q: Can I use this without HuggingFace?**
-A: Absolutely! For local development, just place your `linkedin.txt` in the `me/` folder. For deployment, you'll need some way to provide the data file.
+**Q: Where do I upload linkedin.txt for production?**
+A: Upload it directly to the `me/` folder in your HuggingFace Space repo (same place as `summary.txt`).
+

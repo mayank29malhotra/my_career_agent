@@ -13,22 +13,18 @@ load_dotenv(override=True)
 NTFY_TOPIC = os.getenv("NTFY_TOPIC")
 NTFY_URL = f"https://ntfy.sh/{NTFY_TOPIC}"
 
-# LinkedIn data configuration
-HF_LINKEDIN_REPO = os.getenv("HF_LINKEDIN_REPO", "")
-HF_LINKEDIN_FILE = os.getenv("HF_LINKEDIN_FILE", "linkedin.txt")
-HF_TOKEN = os.getenv("HF_TOKEN", None)
 ME_DIR = Path("me")
 
 
 def load_linkedin_data():
     """
-    Load LinkedIn data from local file or HuggingFace.
-    Priority: local linkedin.txt > HuggingFace > local PDF (legacy)
+    Load LinkedIn data from local file.
+    On HuggingFace Spaces, upload linkedin.txt directly to the me/ folder in the repo.
     """
     linkedin_txt = ME_DIR / "linkedin.txt"
     linkedin_pdf = ME_DIR / "linkedin.pdf"
     
-    # 1. Try local text file first
+    # 1. Try local text file (this is the main approach)
     if linkedin_txt.exists():
         with open(linkedin_txt, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -36,30 +32,7 @@ def load_linkedin_data():
             print(f"✓ Loaded LinkedIn data from {linkedin_txt} ({len(content):,} chars)")
             return content
     
-    # 2. Try HuggingFace
-    if HF_LINKEDIN_REPO:
-        try:
-            from huggingface_hub import hf_hub_download
-            print(f"📥 Downloading LinkedIn data from HuggingFace: {HF_LINKEDIN_REPO}")
-            
-            ME_DIR.mkdir(exist_ok=True)
-            local_path = hf_hub_download(
-                repo_id=HF_LINKEDIN_REPO,
-                filename=HF_LINKEDIN_FILE,
-                repo_type="dataset",
-                token=HF_TOKEN,
-                local_dir=ME_DIR,
-                local_dir_use_symlinks=False
-            )
-            
-            with open(local_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            print(f"✓ Downloaded LinkedIn data from HuggingFace ({len(content):,} chars)")
-            return content
-        except Exception as e:
-            print(f"⚠️ Failed to download from HuggingFace: {e}")
-    
-    # 3. Fallback to PDF (legacy)
+    # 2. Fallback to PDF (legacy)
     if linkedin_pdf.exists():
         try:
             from pypdf import PdfReader
@@ -74,7 +47,7 @@ def load_linkedin_data():
         except Exception as e:
             print(f"⚠️ Failed to read PDF: {e}")
     
-    print("⚠️ No LinkedIn data found!")
+    print("⚠️ No LinkedIn data found! Upload linkedin.txt to me/ folder.")
     return ""
 
 
@@ -183,17 +156,19 @@ You're here to help recruiters, potential employers, collaborators, or anyone in
 ## Conversation Guidelines:
 1. **Answer wisely**: Draw from your LinkedIn profile and summary. If you know the answer from context, respond naturally and confidently as yourself.
 
-2. **When you don't know**: If asked something not in your background materials (even trivial questions), use the record_unknown_question tool immediately. Don't make up information.
+2. **Prioritize recent experience**: When discussing your work, projects, or skills, ALWAYS lead with your most recent and current experience first. Start with Shell, then move backwards chronologically. Your current role and recent projects are most relevant to recruiters.
 
-3. **Build relationships**: If someone seems genuinely interested (asking multiple questions, discussing opportunities, showing engagement), naturally guide the conversation toward exchanging contact information. Ask for their name and email, then use record_user_details to capture it along with context about the conversation.
+3. **When you don't know**: If asked something not in your background materials (even trivial questions), use the record_unknown_question tool immediately. Don't make up information.
 
-4. **Be strategic**: Treat every conversation as an opportunity - whether it's a recruiter, potential client, or collaborator. Be memorable, be authentic, be you.
+4. **Build relationships**: If someone seems genuinely interested (asking multiple questions, discussing opportunities, showing engagement), naturally guide the conversation toward exchanging contact information. Ask for their name and email, then use record_user_details to capture it along with context about the conversation.
 
-5. Before answerign the question think about all the relevant topics in the linkedin information and then answer about it
-6. "Don't make up information" Use the tools provided to you to record any unknown questions or user details and answer only based on the information you have from the linkedin and summary
-6. After using any tool, ask if they have other questions or need more information; if not, close politely and professionally.
-7. Treat every conversation as an opportunity; be memorable, authentic, and strategic.
-8. Before calling any tool (record_user_details or record_unknown_question), explicitly ask for and confirm the user's email (and name if not already provided). If they decline or don't provide it, note that and proceed with the tool using whatever context you have.
+5. **Be strategic**: Treat every conversation as an opportunity - whether it's a recruiter, potential client, or collaborator. Be memorable, be authentic, be you.
+
+6. Before answering the question, think about all the relevant topics in the linkedin information, prioritize the NEWEST/MOST RECENT ones, and then answer.
+7. "Don't make up information" Use the tools provided to you to record any unknown questions or user details and answer only based on the information you have from the linkedin and summary
+8. After using any tool, ask if they have other questions or need more information; if not, close politely and professionally.
+9. Treat every conversation as an opportunity; be memorable, authentic, and strategic.
+10. Before calling any tool (record_user_details or record_unknown_question), explicitly ask for and confirm the user's email (and name if not already provided). If they decline or don't provide it, note that and proceed with the tool using whatever context you have.
 """
 
 system_prompt += f"\n\n## Summary:\n{summary}\n\n## LinkedIn Profile:\n{linkedin}\n\n"
