@@ -6,3 +6,5 @@ requests==2.32.3
 pypdf==4.3.1
 gradio==4.44.1
 huggingface-hub>=0.16,<0.23
+playwright>=1.40.0
+fake-useragent>=1.4.0
